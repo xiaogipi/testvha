@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lit Review: Classics</title>
+    <style>
+        /* --- 1. CORE STYLES (NO EXTERNAL LIBS) --- */
+        :root {
+            --primary: #0284c7; /* Sky Blue */
+            --primary-dark: #0369a1;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 100px; /* Space for bottom bar */
+        }
+
+        /* --- 2. HEADER --- */
+        header {
+            background-color: #0f172a;
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 { font-size: 18px; font-weight: 700; color: #38bdf8; margin-bottom: 2px; }
+        .subtitle { font-size: 12px; color: #94a3b8; }
+        .btn-new {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-new:active { opacity: 0.8; transform: scale(0.96); }
+
+        /* --- 3. STICKY WORD BANK --- */
+        .word-bank-container {
+            position: sticky;
+            top: 60px; /* Below header */
+            z-index: 90;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+        }
+        .wb-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-light);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .word-tag {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .word-tag.used {
+            opacity: 0.4;
+            text-decoration: line-through;
+            background: #e2e8f0;
+        }
+
+        /* --- 4. QUESTIONS --- */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .tag {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .q-num { font-size: 12px; color: #cbd5e1; }
+
+        .q-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-main);
+        }
+
+        input {
+            border: none;
+            border-bottom: 2px solid #cbd5e1;
+            background: #f8fafc;
+            width: 120px;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            border-radius: 4px 4px 0 0;
+            margin: 0 4px;
+        }
+        input:focus { outline: none; border-color: var(--primary); background: #e0f2fe; }
+        
+        /* Feedback States */
+        input.correct { border-color: var(--success) !important; color: var(--success); background: #d1fae5; }
+        input.wrong { border-color: var(--error) !important; color: var(--error); background: #fee2e2; }
+
+        .feedback-msg {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--error);
+            background: #fef2f2;
+            padding: 8px;
+            border-radius: 6px;
+            display: none; /* Hidden by default */
+        }
+        .feedback-msg.show { display: block; }
+
+        /* --- 5. BOTTOM CONTROLS --- */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* iPhone Home Bar fix */
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-reset { background: #f1f5f9; color: #64748b; }
+        .btn-submit { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3); }
+
+        /* --- 6. MODAL --- */
+        #resultModal {
+            display: none; /* IMPORTANT: Hidden by default */
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .score-big { font-size: 48px; font-weight: 800; color: var(--primary); margin: 10px 0; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>Lit Review</h1>
+            <div class="subtitle">Major Authors & Works</div>
+        </div>
+        <button class="btn-new" onclick="initGame()">↻ New Test</button>
+    </header>
+
+    <div class="word-bank-container">
+        <div class="wb-header">
+            <span>Word Bank</span>
+            <span id="wordCount">...</span>
+        </div>
+        <div id="wordBank" class="word-list">
+            </div>
+    </div>
+
+    <main class="container" id="quizContainer">
+        </main>
+
+    <div class="bottom-bar">
+        <button class="btn btn-reset" onclick="resetAnswers()">Reset</button>
+        <button class="btn btn-submit" onclick="submitQuiz()">Submit</button>
+    </div>
+
+    <div id="resultModal">
+        <div class="modal-content">
+            <div style="font-size: 40px; margin-bottom: 10px;">🏆</div>
+            <h2 style="color: #1e293b;">Result</h2>
+            <div id="scoreText" class="score-big">0%</div>
+            <p id="scoreDetail" style="color: #64748b; margin-bottom: 20px;">...</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-reset" onclick="closeModal()">Review</button>
+                <button class="btn btn-submit" onclick="initGame(); closeModal()">New Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DATA SOURCE ---
+        const questionsDB = [
+            // BEOWULF
+            { topic: "BEOWULF", q: "Beowulf is an epic poem written in ___ English.", a: "Old" },
+            { topic: "BEOWULF", q: "The author of Beowulf is ___.", a: "unknown" },
+            { topic: "BEOWULF", q: "Beowulf defeats the monster ___ to save Heorot hall.", a: "Grendel" },
+            { topic: "BEOWULF", q: "The poem is set in Scandinavia, involving the Geats and the ___.", a: "Danes" },
+
+            // THREE YOUNG MEN
+            { topic: "PARDONER'S TALE", q: "This story is found in 'The Canterbury Tales' by Geoffrey ___.", a: "Chaucer" },
+            { topic: "PARDONER'S TALE", q: "The three young men find a pile of ___ under a tree.", a: "gold" },
+            { topic: "PARDONER'S TALE", q: "They end up killing each other due to their ___.", a: "greed" },
+            { topic: "PARDONER'S TALE", q: "Chaucer is a key figure of the ___ English period.", a: "Middle" },
+
+            // HAMLET
+            { topic: "HAMLET", q: "Hamlet is a tragedy written by William ___.", a: "Shakespeare" },
+            { topic: "HAMLET", q: "The play is set in the Kingdom of ___.", a: "Denmark" },
+            { topic: "HAMLET", q: "Prince Hamlet seeks revenge for the murder of his ___.", a: "father" },
+            { topic: "HAMLET", q: "Shakespeare wrote during the ___ (or Elizabethan) period.", a: "Renaissance" },
+
+            // ROBINSON CRUSOE
+            { topic: "ROBINSON CRUSOE", q: "Robinson Crusoe was written by Daniel ___.", a: "Defoe" },
+            { topic: "ROBINSON CRUSOE", q: "Crusoe names the native man he rescues ___.", a: "Friday" },
+            { topic: "ROBINSON CRUSOE", q: "This work is often cited as one of the first realistic ___ in English.", a: "novels" },
+            { topic: "ROBINSON CRUSOE", q: "Defoe wrote during the ___ period (Age of Reason).", a: "Enlightenment" },
+
+            // GULLIVER'S TRAVELS
+            { topic: "GULLIVER'S TRAVELS", q: "Gulliver's Travels is a famous satire by Jonathan ___.", a: "Swift" },
+            { topic: "GULLIVER'S TRAVELS", q: "In Lilliput, the inhabitants are extremely ___.", a: "small" },
+            { topic: "GULLIVER'S TRAVELS", q: "The Yahoos represent the savage side of ___ nature.", a: "human" },
+            { topic: "GULLIVER'S TRAVELS", q: "Swift uses this book to mock travel narratives and ___.", a: "politics" },
+
+            // SOLITARY REAPER
+            { topic: "SOLITARY REAPER", q: "The Solitary Reaper is a poem by William ___.", a: "Wordsworth" },
+            { topic: "SOLITARY REAPER", q: "The poet sees a Highland girl reaping and ___ alone.", a: "singing" },
+            { topic: "SOLITARY REAPER", q: "Wordsworth is a major poet of the ___ period.", a: "Romantic" },
+            { topic: "SOLITARY REAPER", q: "The poem emphasizes emotion and the beauty of ___.", a: "nature" },
+
+            // OLIVER TWIST
+            { topic: "OLIVER TWIST", q: "Oliver Twist was written by Charles ___.", a: "Dickens" },
+            { topic: "OLIVER TWIST", q: "Oliver famously asks for more food in the ___.", a: "workhouse" },
+            { topic: "OLIVER TWIST", q: "The villainous Fagin leads a gang of child ___.", a: "thieves" },
+            { topic: "OLIVER TWIST", q: "Dickens wrote during the ___ era.", a: "Victorian" },
+
+            // LORD OF THE FLIES
+            { topic: "LORD OF THE FLIES", q: "Lord of the Flies was written by William ___.", a: "Golding" },
+            { topic: "LORD OF THE FLIES", q: "The conch shell symbolizes law and ___.", a: "order" },
+            { topic: "LORD OF THE FLIES", q: "Piggy's ___ are used to start the fire.", a: "glasses" },
+            { topic: "LORD OF THE FLIES", q: "The novel explores the inherent ___ in human nature.", a: "evil" }
+        ];
+
+        const distractors = ["Austen", "sonnet", "American", "whale", "modernism", "ghost", "Milton", "comedy", "London", "ship"];
+
+        // --- 2. LOGIC ---
+        let currentQuestions = [];
+        let currentWordBank = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            document.getElementById('quizContainer').innerHTML = '';
+            document.getElementById('wordBank').innerHTML = '';
+            window.scrollTo(0, 0);
+
+            // Select 20 random questions
+            const shuffledDB = shuffleArray([...questionsDB]);
+            currentQuestions = shuffledDB.slice(0, 20);
+
+            // Build Word Bank
+            const answers = currentQuestions.map(q => q.a);
+            const randomDistractors = shuffleArray([...distractors]).slice(0, 5);
+            currentWordBank = shuffleArray([...answers, ...randomDistractors]);
+
+            renderWordBank();
+            renderQuestions();
+        }
+
+        function renderWordBank() {
+            const bankContainer = document.getElementById('wordBank');
+            document.getElementById('wordCount').innerText = `${currentWordBank.length} Options`;
+            
+            currentWordBank.forEach(word => {
+                const badge = document.createElement('span');
+                badge.className = "word-tag";
+                badge.innerText = word;
+                badge.onclick = function() {
+                    this.classList.toggle('used');
+                };
+                bankContainer.appendChild(badge);
+            });
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('quizContainer');
+            
+            currentQuestions.forEach((item, index) => {
+                const parts = item.q.split('___');
+                const card = document.createElement('div');
+                card.className = "card";
+                card.style.animationDelay = `${index * 0.05}s`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="tag">${item.topic}</span>
+                        <span class="q-num">#${index + 1}</span>
+                    </div>
+                    
+                    <div class="q-text">
+                        ${parts[0]}
+                        <input type="text" 
+                            data-index="${index}" 
+                            autocomplete="off"
+                        >
+                        ${parts[1] || ''}
+                    </div>
+                    
+                    <div id="feedback-${index}" class="feedback-msg">
+                        Correct answer: <strong>${item.a}</strong>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            const inputs = document.querySelectorAll('input[type="text"]');
+            
+            inputs.forEach(input => {
+                const index = input.getAttribute('data-index');
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswer = currentQuestions[index].a.toLowerCase();
+                const feedbackDiv = document.getElementById(`feedback-${index}`);
+
+                // Reset styles
+                input.className = ''; 
+                feedbackDiv.classList.remove('show');
+
+                if (userAnswer === correctAnswer) {
+                    score++;
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('wrong');
+                    feedbackDiv.classList.add('show');
+                }
+            });
+
+            showResult(score);
+        }
+
+        function resetAnswers() {
+            const inputs = document.querySelectorAll('input[type="text"]');
+            inputs.forEach(input => {
+                input.value = '';
+                input.className = '';
+                const index = input.getAttribute('data-index');
+                document.getElementById(`feedback-${index}`).classList.remove('show');
+            });
+            
+            // Reset word bank
+            const tags = document.querySelectorAll('.word-tag');
+            tags.forEach(t => t.classList.remove('used'));
+            
+            window.scrollTo(0, 0);
+        }
+
+        function showResult(score) {
+            const modal = document.getElementById('resultModal');
+            const percentage = Math.round((score / 20) * 100);
+            
+            document.getElementById('scoreText').innerText = `${percentage}%`;
+            document.getElementById('scoreDetail').innerText = `${score} / 20 Correct Answers`;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        // Start game immediately
+        initGame();
+
+    </script>
+</body>
+</html>
